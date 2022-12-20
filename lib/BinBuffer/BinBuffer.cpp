@@ -1,15 +1,5 @@
 #include <BinBuffer.hpp>
 
-BinBuffer::BinBuffer(uint8_t n_segs, uint16_t seg_size) :
-    n_segs(n_segs), seg_size(seg_size), N(n_segs*seg_size) {
-        buffer = new volatile unsigned char[N];
-        ready = new volatile boolean[n_segs];
-
-        for(uint8_t i = 0; i<n_segs; i++) {
-            ready[i] = false;
-        }
-    }
-
 // template<typename T>
 uint8_t BinBuffer::append(const void *src, size_t len) {
   if(len>seg_size) {// Not prepared for filling a complete segment!

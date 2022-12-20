@@ -12,7 +12,12 @@ class BinBuffer {
     volatile uint16_t pos = 0;
     volatile uint32_t error = 0;
 
-    BinBuffer(uint8_t n_segs, uint16_t seg_size);
+    BinBuffer(uint8_t n_segs, uint16_t seg_size) :
+    n_segs(n_segs), seg_size(seg_size), N(n_segs*seg_size) {
+        buffer = new volatile unsigned char[N];
+        ready = new volatile boolean[n_segs]();
+    }
+
     // template <typename T>
     uint8_t append(const void *src, size_t len);
     uint8_t is_ready();
