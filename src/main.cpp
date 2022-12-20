@@ -36,7 +36,7 @@ char report[80];
 
 uint32_t error = 0;
 
-BinBuffer buffer(2,512);
+BinBuffer buffer(4,512);
 BinBuffer minibuffer(1,24);
 
 uint16_t code;
@@ -111,14 +111,11 @@ void setup() {
 }
 
 void loop() {
-  for(uint8_t i = 0; i<buffer.Nsegments; i++) {
-    if(buffer.ready[i]) {
-      const unsigned char* sd_arr = const_cast<const unsigned char*>(&buffer.buffer[i*buffer.Nsize]);
-      myFile.write(sd_arr, buffer.Nsize);
-      myFile.flush();
-      buffer.ready[i] = false;
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    }
+  if(buffer.is_ready()) { // Loop over this if writing all buffer is highest priority, else yield to rest of loop after one segment.
+    const unsigned char* sd_arr = const_cast<const unsigned char*>(buffer.pop_ready_segment());
+    myFile.write(sd_arr, buffer.seg_size);
+    myFile.flush();
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
   
   if(buffer.error!=0) {
