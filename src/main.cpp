@@ -107,7 +107,7 @@ void setup() {
   }
   
   digitalWrite(LED_BUILTIN, HIGH);
-  myTimer.begin(read_altimu_sensors, 10000);
+  myTimer.begin(read_altimu_sensors, 5000);
 }
 
 void loop() {
@@ -152,7 +152,7 @@ void read_altimu_sensors() {
   code = 0x4020;
   buffer.append(&code, sizeof(code));
   minibuffer.pos = 0;
-  minibuffer.append(&imu.a.x, sizeof(imu.a.x));
+  minibuffer.append(&imu.a.x, sizeof(imu.a.x));  // We could probably write the whole vector in one
   minibuffer.append(&imu.a.y, sizeof(imu.a.x));
   minibuffer.append(&imu.a.z, sizeof(imu.a.x));
   buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
