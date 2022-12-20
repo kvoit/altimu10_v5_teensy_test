@@ -19,6 +19,7 @@ class BinBuffer {
     volatile unsigned char * pop_ready_segment();
 
     private:
-    volatile boolean *ready;
-    std::queue<uint8_t> ready_queue;
+    volatile boolean *ready; // Boolean array to check if a newly started segment is still ready (not yet read)
+    std::queue<uint8_t> ready_queue;    // Queue of segment idxs to know which segment needs to be read next 
+                                        //(e.g. when segments at the beginning AND end are ready and the latter need to be read first)
 };

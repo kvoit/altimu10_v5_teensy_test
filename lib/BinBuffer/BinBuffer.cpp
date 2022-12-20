@@ -44,5 +44,5 @@ volatile unsigned char * BinBuffer::pop_ready_segment() {
     uint8_t ready_seg = ready_queue.front();
     ready_queue.pop();
     ready[ready_seg] = false;
-    return &buffer[ready_seg];
+    return &buffer[ready_seg*seg_size];
 }
