@@ -1,0 +1,76 @@
+#include <sensor_func.h>
+
+void read_altimu_sensors() {
+  // uint16_t old_pos = buffer.pos;
+  timestamp_milli = millis();
+  timestamp_micro = micros();
+  imu.read();
+  mag.read();
+  pressure = ps.readPressureMillibars();
+  temperature = ps.readTemperatureC();
+
+  //Time
+  code = 0x0020;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&timestamp_milli, sizeof(timestamp_milli));
+  minibuffer.append(&timestamp_micro, sizeof(timestamp_micro));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+
+  // Accelerometer
+  code = 0x4020;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&imu.a.x, sizeof(imu.a.x));
+  minibuffer.append(&imu.a.y, sizeof(imu.a.x));
+  minibuffer.append(&imu.a.z, sizeof(imu.a.x));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+  snprintf(report, sizeof(report), "A: %6d %6d %6d    G: %6d %6d %6d",
+    imu.a.x, imu.a.y, imu.a.z,
+    imu.g.x, imu.g.y, imu.g.z);
+  Serial.println(report);
+
+  // Gyroscope
+  code = 0x8020;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&imu.g.x, sizeof(imu.g.x));
+  minibuffer.append(&imu.g.y, sizeof(imu.g.x));
+  minibuffer.append(&imu.g.z, sizeof(imu.g.x));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+
+  // Magnetometer
+  code = 0xC020;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&mag.m.x, sizeof(mag.m.x));
+  minibuffer.append(&mag.m.y, sizeof(mag.m.x));
+  minibuffer.append(&mag.m.z, sizeof(mag.m.x));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+
+  // Pressure
+  code = 0xF120;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&pressure, sizeof(pressure));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+
+  // Temperature
+  code = 0x0810;
+  minibuffer.pos = 0;
+  minibuffer.append(&code, sizeof(code));
+  minibuffer.append(&temperature, sizeof(temperature));
+  buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+  buffer.append(&crc16, sizeof(crc16));
+}

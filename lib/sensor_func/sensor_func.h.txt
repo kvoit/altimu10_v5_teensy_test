@@ -1,0 +1,12 @@
+#pragma once
+
+#include <Arduino.h>
+#include <BinBuffer.hpp>
+#include <FastCRC.h>
+
+#include <Wire.h>
+#include <LPS.h>
+#include <LIS3MDL.h>
+#include <LSM6.h>
+
+void read_altimu_sensors();
