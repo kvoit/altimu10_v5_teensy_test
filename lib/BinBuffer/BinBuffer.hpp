@@ -20,6 +20,8 @@ class BinBuffer {
 
     size_t append(const void *src, size_t len);
     template <typename T> size_t append(const T &src) { return append(&src, sizeof(T)); };
+    template<typename T, size_t N> size_t append(const T (&src)[N]) { return append(src, N*sizeof(T));
+}
     uint8_t is_ready();
     volatile unsigned char * pop_ready_segment();
 

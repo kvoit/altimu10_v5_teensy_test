@@ -18,6 +18,8 @@
 
 #include <RNG.h>
 
+const uint8_t PIN_LED = 0;
+
 File myFile;
 const int chipSelect = BUILTIN_SDCARD;
 
@@ -43,6 +45,12 @@ uint16_t code;
 uint16_t crc16;
 uint32_t timestamp_milli;
 uint32_t timestamp_micro;
+
+const uint16_t imu_period = 5000;  //us
+const uint16_t led_every = 1000000 /imu_period; //us
+const uint16_t led_on_period = 1000/30; //ms
+volatile uint32_t led_on_time = 0;
+volatile uint16_t led_counter = 0;
 
 void read_altimu_sensors();
 
@@ -128,6 +136,10 @@ void loop() {
   INTERVAL(1000, millis()) {
     Serial.print(".");
   }
+
+  if(millis()-led_on_time>led_on_period) {
+    digitalWrite(PIN_LED, LOW);
+  }
 }
 
 void read_altimu_sensors() {
@@ -198,4 +210,22 @@ void read_altimu_sensors() {
   buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
   crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
   buffer.append(crc16);
+
+  led_counter++;
+  if(led_counter>=led_every) {
+    led_counter = 0;
+    led_on_time = millis();
+    timestamp_micro = micros();
+    digitalWrite(PIN_LED, HIGH);
+
+    // LED Time
+    code = 0x0021;
+    buffer.append(code);
+    minibuffer.pos = 0;
+    minibuffer.append(const_cast<uint32_t*>(&led_on_time), sizeof(led_on_time));  // need to cast away volatile
+    minibuffer.append(timestamp_micro);
+    buffer.append(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+    crc16 = CRC16.ccitt(const_cast<const unsigned char*>(minibuffer.buffer), minibuffer.pos);
+    buffer.append(crc16);
+  }
 }
