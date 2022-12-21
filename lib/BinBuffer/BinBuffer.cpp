@@ -1,10 +1,13 @@
 #include <BinBuffer.hpp>
 
-// template<typename T>
-uint8_t BinBuffer::append(const void *src, size_t len) {
+size_t BinBuffer::append(const void *src, size_t len) {
   if(len>seg_size) {// Not prepared for filling a complete segment!
     error |= 1<<1;
-    return 1;
+    return 0;
+  }
+  if(len == 0) {
+    error |= 1<<2;
+    return 0;
   }
 
   uint8_t old_segment = pos/seg_size;
@@ -23,7 +26,7 @@ uint8_t BinBuffer::append(const void *src, size_t len) {
         error |= 1;
     }
   }
-  return 0;
+  return len;
 }
 
 uint8_t BinBuffer::is_ready() {

@@ -18,8 +18,8 @@ class BinBuffer {
         ready = new volatile boolean[n_segs]();
     }
 
-    // template <typename T>
-    uint8_t append(const void *src, size_t len);
+    size_t append(const void *src, size_t len);
+    template <typename T> size_t append(const T &src) { return append(&src, sizeof(T)); };
     uint8_t is_ready();
     volatile unsigned char * pop_ready_segment();
 
