@@ -18,7 +18,7 @@
 
 #include <RNG.h>
 
-const uint8_t PIN_LED = 0;
+const uint8_t PIN_LED = 39;
 
 File myFile;
 const int chipSelect = BUILTIN_SDCARD;
@@ -46,9 +46,9 @@ uint16_t crc16;
 uint32_t timestamp_milli;
 uint32_t timestamp_micro;
 
-const uint16_t imu_period = 5000;  //us
-const uint16_t led_every = 1000000 /imu_period; //us
-const uint16_t led_on_period = 1000/30; //ms
+const uint32_t imu_period = 5000;  //us
+const uint16_t led_every = 1000000 / imu_period; //us
+const uint32_t led_on_period = 1000/30; //ms
 volatile uint32_t led_on_time = 0;
 volatile uint16_t led_counter = 0;
 
@@ -56,6 +56,7 @@ void read_altimu_sensors();
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
+  pinMode(PIN_LED,OUTPUT);
   Serial.begin(115200);
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -90,6 +91,9 @@ void setup() {
   }
   ps.enableDefault();
 
+  imu.read();
+  Serial.println(imu.a.x);
+
   //SD card
   start_trng();
   uint32_t rndval = trng();
@@ -110,12 +114,13 @@ void setup() {
   // if the file opened okay, write to it:
   if (!myFile) {
     // if the file didn't open, print an error:
-    Serial.println("error opening file");
+    Serial.print("error opening file: ");
+    Serial.println(myFile);
     while (1);
   }
   
   digitalWrite(LED_BUILTIN, HIGH);
-  myTimer.begin(read_altimu_sensors, 5000);
+  myTimer.begin(read_altimu_sensors, imu_period);
 }
 
 void loop() {
@@ -137,7 +142,7 @@ void loop() {
     Serial.print(".");
   }
 
-  if(millis()-led_on_time>led_on_period) {
+  if(digitalRead(PIN_LED) && millis()-led_on_time>led_on_period) {
     digitalWrite(PIN_LED, LOW);
   }
 }
