@@ -48,15 +48,18 @@ uint32_t timestamp_micro;
 
 const uint32_t imu_period = 5000;  //us
 const uint16_t led_every = 1000000 / imu_period; //us
-const uint32_t led_on_period = 1000/30; //ms
+const uint32_t led_on_period = 1; //ms
 volatile uint32_t led_on_time = 0;
 volatile uint16_t led_counter = 0;
+
+uint8_t lsm6_ctrl;
 
 void read_altimu_sensors();
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
   pinMode(PIN_LED,OUTPUT);
+  pinMode(12,INPUT_PULLDOWN);
   Serial.begin(115200);
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -69,6 +72,14 @@ void setup() {
 
   Wire.begin();
 
+  if(digitalRead(12)==LOW) {
+    lsm6_ctrl = 0x8C;
+  } else {
+    lsm6_ctrl = 0x80;
+  }
+  Serial.print("CTRL: ");
+  Serial.println(lsm6_ctrl,HEX);
+
   //Sensors
   if (!imu.init())
   {
@@ -76,6 +87,8 @@ void setup() {
     while (1);
   }
   imu.enableDefault();
+  imu.writeReg(LSM6::CTRL1_XL, 0x8C);
+  imu.writeReg(LSM6::CTRL2_G, 0x8C);
 
   if (!mag.init())
   {
